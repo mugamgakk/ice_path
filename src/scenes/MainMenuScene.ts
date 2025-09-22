@@ -18,12 +18,12 @@ export class MainMenuScene extends Phaser.Scene {
     this.createSnowEffect();
 
     // Title with ice crystal effect
-    const titleText = this.add.text(width / 2, height / 3, '❄ ICE PATH ❄', {
-      fontSize: '72px',
+    const titleText = this.add.text(width / 2, height / 3 + 20, '❄ ICE PATH ❄', {
+      fontSize: '64px',
       color: '#ffffff',
       fontStyle: 'bold',
       stroke: '#0D47A1',
-      strokeThickness: 8,
+      strokeThickness: 6,
       shadow: {
         offsetX: 0,
         offsetY: 4,
@@ -34,19 +34,8 @@ export class MainMenuScene extends Phaser.Scene {
     });
     titleText.setOrigin(0.5);
 
-    // Add shimmer animation to title
-    this.tweens.add({
-      targets: titleText,
-      scaleX: 1.05,
-      scaleY: 1.05,
-      duration: 2000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.inOut'
-    });
-
-    const subText = this.add.text(width / 2, height / 3 + 90, '크리스탈 기억력 퍼즐', {
-      fontSize: '28px',
+    const subText = this.add.text(width / 2, height / 3 + 85, '크리스탈 기억력 퍼즐', {
+      fontSize: '24px',
       color: '#E1F5FE',
       fontStyle: 'italic'
     });

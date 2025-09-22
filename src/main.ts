@@ -1,4 +1,4 @@
-import './style.css';
+// import './style.css';
 import Phaser from 'phaser';
 import { Preloader } from './scenes/Preloader';
 import { MainMenuScene } from './scenes/MainMenuScene';
@@ -9,10 +9,12 @@ import { GameOverScene } from './scenes/GameOverScene';
 const appDiv = document.querySelector<HTMLDivElement>('#app');
 if (appDiv) {
   appDiv.innerHTML = `
-    <div class="w-full h-full flex flex-col items-center justify-center">
-      <div id="game-container" class="rounded-lg shadow-2xl"></div>
-      <div class="mt-4 text-white text-center">
-        <p class="text-sm">방향키: 이동 • 스페이스바: 점프 • 경로 노출 시 스페이스바: 즉시 시작</p>
+    <div style="width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%); padding: 20px; box-sizing: border-box;">
+      <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);">
+        <div id="game-container" style="border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5);"></div>
+        <div style="margin-top: 20px; color: rgba(255,255,255,0.9); text-align: center;">
+          <p style="font-size: 16px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">❄️ 방향키: 이동 • 스페이스바: 점프 • 경로 노출 시 스페이스바: 즉시 시작 ❄️</p>
+        </div>
       </div>
     </div>
   `;
@@ -27,12 +29,11 @@ window.addEventListener('DOMContentLoaded', () => {
     parent: 'game-container',
     backgroundColor: '#1a1a2e',
     scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH
+      mode: Phaser.Scale.NONE,
+      autoCenter: Phaser.Scale.NO_CENTER
     },
     scene: [Preloader, MainMenuScene, GamePlayScene, GameOverScene]
   };
 
-  const game = new Phaser.Game(config);
-  console.log('Game initialized', game);
+  new Phaser.Game(config);
 });

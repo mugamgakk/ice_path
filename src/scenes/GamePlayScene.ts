@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/GameConfig';
-import { SpriteGenerator } from '../utils/SpriteGenerator';
 import type { GridPosition, PathTile, GameState, PlayerState } from '../types/GameTypes';
 
 export class GamePlayScene extends Phaser.Scene {
@@ -13,7 +12,6 @@ export class GamePlayScene extends Phaser.Scene {
   private path: GridPosition[] = [];
   private startPos!: GridPosition;
   private endPos!: GridPosition;
-  private levelText!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private isPathRevealed: boolean = true;
   private snowParticles: Phaser.GameObjects.Rectangle[] = [];
@@ -205,7 +203,7 @@ export class GamePlayScene extends Phaser.Scene {
     const { width } = this.cameras.main;
 
     // Level text with ice effect
-    this.levelText = this.add.text(30, 30, `❄ 레벨 ${this.gameState.level}`, {
+    this.add.text(30, 30, `❄ 레벨 ${this.gameState.level}`, {
       fontSize: '28px',
       color: '#ffffff',
       stroke: '#0D47A1',
@@ -345,10 +343,25 @@ export class GamePlayScene extends Phaser.Scene {
   private createPlayer() {
     const startTile = this.grid[this.startPos.y][this.startPos.x];
 
+
     // Create image with penguin texture
-    this.player = this.add.image(startTile.sprite!.x, startTile.sprite!.y, 'penguin-down') as any;
-    this.player.setDisplaySize(GAME_CONFIG.TILE_SIZE - 16, GAME_CONFIG.TILE_SIZE - 16);
-    this.player.setDepth(10);
+    if (this.textures.exists('penguin-down')) {
+      try {
+        // Create character image with larger size and proper centering
+        this.player = this.add.image(startTile.sprite!.x, startTile.sprite!.y, 'penguin-down') as any;
+        this.player.setDisplaySize(GAME_CONFIG.TILE_SIZE * 0.8, GAME_CONFIG.TILE_SIZE * 0.8); // 80% of tile size
+        this.player.setOrigin(0.5, 0.5); // Ensure proper centering
+        this.player.setDepth(10);
+      } catch (error) {
+        // Fallback: create a simple colored circle
+        this.player = this.add.circle(startTile.sprite!.x, startTile.sprite!.y, GAME_CONFIG.TILE_SIZE * 0.3, 0x00FF00) as any;
+        this.player.setDepth(10);
+      }
+    } else {
+      // Fallback: create a simple colored rectangle
+      this.player = this.add.rectangle(startTile.sprite!.x, startTile.sprite!.y, GAME_CONFIG.TILE_SIZE * 0.6, GAME_CONFIG.TILE_SIZE * 0.6, 0xFF0000) as any;
+      this.player.setDepth(10);
+    }
 
     this.playerState = {
       gridPosition: { ...this.startPos },
@@ -450,15 +463,19 @@ export class GamePlayScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
       moveX = -1;
       this.playerState.facing = 'left';
+      this.player.setTexture(`penguin-${this.playerState.facing}`);
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
       moveX = 1;
       this.playerState.facing = 'right';
+      this.player.setTexture(`penguin-${this.playerState.facing}`);
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
       moveY = -1;
       this.playerState.facing = 'up';
+      this.player.setTexture(`penguin-${this.playerState.facing}`);
     } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
       moveY = 1;
       this.playerState.facing = 'down';
+      this.player.setTexture(`penguin-${this.playerState.facing}`);
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && (moveX !== 0 || moveY !== 0)) {
@@ -466,9 +483,6 @@ export class GamePlayScene extends Phaser.Scene {
     }
 
     if (moveX !== 0 || moveY !== 0) {
-      // Change texture based on direction
-      this.player.setTexture(`penguin-${this.playerState.facing}`);
-
       const jumpMultiplier = isJump ? 2 : 1;
       this.movePlayer(moveX * jumpMultiplier, moveY * jumpMultiplier, isJump);
     }
@@ -530,8 +544,8 @@ export class GamePlayScene extends Phaser.Scene {
       this.playerState.isMoving = false;
       this.playerState.isJumping = false;
 
-      // Return to idle texture
-      this.player.setTexture('penguin-down');
+      // Keep current facing direction texture
+      this.player.setTexture(`penguin-${this.playerState.facing}`);
 
       // Create landing effect
       this.createLandingEffect(tile.sprite!.x, tile.sprite!.y);
@@ -683,8 +697,8 @@ export class GamePlayScene extends Phaser.Scene {
     successText.setDepth(100);
 
     // Add fireworks effect
-    for (let i = 0; i < 20; i++) {
-      this.time.delayedCall(i * 100, () => {
+    for (let i = 0; i < 8; i++) {
+      this.time.delayedCall(i * 80, () => {
         this.createFirework(
           Phaser.Math.Between(100, this.cameras.main.width - 100),
           Phaser.Math.Between(100, this.cameras.main.height - 100)
@@ -697,15 +711,15 @@ export class GamePlayScene extends Phaser.Scene {
       scaleX: 1.2,
       scaleY: 1.2,
       angle: 10,
-      duration: 500,
+      duration: 300,
       yoyo: true,
-      repeat: 2,
+      repeat: 1,
       ease: 'Bounce.out'
     });
 
-    this.time.delayedCall(3000, () => {
-      this.cameras.main.fadeOut(500, 255, 255, 255);
-      this.time.delayedCall(500, () => {
+    this.time.delayedCall(1500, () => {
+      this.cameras.main.fadeOut(300, 255, 255, 255);
+      this.time.delayedCall(300, () => {
         this.scene.start('GamePlay', {
           level: this.gameState.level + 1,
           score: this.gameState.score

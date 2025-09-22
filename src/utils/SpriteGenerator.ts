@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 export class SpriteGenerator {
+
   static createCharacterSprite(scene: Phaser.Scene): void {
     // Check if textures already exist
     if (scene.textures.exists('penguin-down')) {
@@ -127,7 +128,8 @@ export class SpriteGenerator {
     rt.destroy();
   }
 
-  static createIceTextureFromImage(scene: Phaser.Scene): void {
+
+  static createIceTextureGenerated(scene: Phaser.Scene): void {
     // Check if textures already exist
     if (scene.textures.exists('ice-tile')) {
       return;
@@ -136,34 +138,75 @@ export class SpriteGenerator {
     const size = 64;
     const graphics = scene.add.graphics();
 
-    // Regular ice tile using the loaded image
+    // Generate a beautiful ice texture with realistic patterns
     const rt1 = scene.add.renderTexture(0, 0, size, size);
     rt1.setVisible(false);
 
-    // Draw the ice floor image as base
-    const iceImage = scene.add.image(size / 2, size / 2, 'ice-floor-base');
-    iceImage.setDisplaySize(size, size);
-    rt1.draw(iceImage);
-    iceImage.destroy();
+    // Base ice layer with gradient
+    graphics.clear();
+    graphics.fillGradientStyle(0xF0F8FF, 0xE0F0FF, 0xD0E8FF, 0xC0E0FF, 1, 1, 1, 1);
+    graphics.fillRect(0, 0, size, size);
 
+    // Add ice crystal patterns
+    graphics.lineStyle(1, 0xB8E6FF, 0.6);
+    for (let i = 0; i < 8; i++) {
+      const centerX = Phaser.Math.Between(5, size - 5);
+      const centerY = Phaser.Math.Between(5, size - 5);
+      const radius = Phaser.Math.Between(3, 8);
+
+      // Draw hexagonal ice crystal
+      const sides = 6;
+      graphics.beginPath();
+      for (let j = 0; j <= sides; j++) {
+        const angle = (j / sides) * Math.PI * 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        if (j === 0) {
+          graphics.moveTo(x, y);
+        } else {
+          graphics.lineTo(x, y);
+        }
+      }
+      graphics.strokePath();
+    }
+
+    // Add random ice cracks
+    graphics.lineStyle(0.5, 0x9DD9FF, 0.4);
+    for (let i = 0; i < 5; i++) {
+      graphics.beginPath();
+      graphics.moveTo(Phaser.Math.Between(0, size), Phaser.Math.Between(0, size));
+      graphics.lineTo(Phaser.Math.Between(0, size), Phaser.Math.Between(0, size));
+      graphics.strokePath();
+    }
+
+    // Add surface shine
+    graphics.fillStyle(0xFFFFFF, 0.15);
+    graphics.fillEllipse(size / 2, size / 4, size * 0.8, size / 6);
+
+    // Subtle texture noise
+    for (let i = 0; i < 15; i++) {
+      const x = Phaser.Math.Between(0, size);
+      const y = Phaser.Math.Between(0, size);
+      const opacity = Phaser.Math.FloatBetween(0.05, 0.15);
+      graphics.fillStyle(0xFFFFFF, opacity);
+      graphics.fillCircle(x, y, 0.5);
+    }
+
+    rt1.draw(graphics);
     rt1.saveTexture('ice-tile');
     rt1.destroy();
 
-    // Broken ice tile - darken and add cracks
+    // Broken ice tile
     const rt2 = scene.add.renderTexture(0, 0, size, size);
     rt2.setVisible(false);
 
-    // Draw base ice image darker
-    const brokenIceImage = scene.add.image(size / 2, size / 2, 'ice-floor-base');
-    brokenIceImage.setDisplaySize(size, size);
-    brokenIceImage.setTint(0x888888); // Darken the image
-    rt2.draw(brokenIceImage);
-    brokenIceImage.destroy();
-
-    // Add crack overlay
     graphics.clear();
-    graphics.lineStyle(2, 0x333333, 0.8);
-    for (let i = 0; i < 5; i++) {
+    graphics.fillStyle(0xA8D8EA, 0.8);
+    graphics.fillRect(0, 0, size, size);
+
+    // Heavy cracks for broken state
+    graphics.lineStyle(2, 0x4A90A4, 0.8);
+    for (let i = 0; i < 8; i++) {
       graphics.beginPath();
       graphics.moveTo(Phaser.Math.Between(0, size), Phaser.Math.Between(0, size));
       graphics.lineTo(Phaser.Math.Between(0, size), Phaser.Math.Between(0, size));
@@ -171,11 +214,11 @@ export class SpriteGenerator {
       graphics.strokePath();
     }
 
-    // Add dark spots for depth
-    for (let i = 0; i < 3; i++) {
+    // Dark depth spots
+    for (let i = 0; i < 4; i++) {
       const x = Phaser.Math.Between(0, size);
       const y = Phaser.Math.Between(0, size);
-      graphics.fillStyle(0x000000, 0.3);
+      graphics.fillStyle(0x1E3A8A, 0.4);
       graphics.fillCircle(x, y, Phaser.Math.Between(3, 8));
     }
 
@@ -183,7 +226,7 @@ export class SpriteGenerator {
     rt2.saveTexture('ice-tile-broken');
     rt2.destroy();
 
-    // Safe path tile - keep the stone texture for contrast
+    // Safe path tile
     const rt3 = scene.add.renderTexture(0, 0, size, size);
     rt3.setVisible(false);
 
@@ -214,6 +257,6 @@ export class SpriteGenerator {
 
   // Keep the old method for backward compatibility
   static createIceTexture(scene: Phaser.Scene): void {
-    this.createIceTextureFromImage(scene);
+    this.createIceTextureGenerated(scene);
   }
 }
