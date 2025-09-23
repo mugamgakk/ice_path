@@ -24,6 +24,10 @@ export class GamePlayScene extends Phaser.Scene {
   }
 
   init(data: { level: number; score: number }) {
+    // 씬 재시작 시 상태 초기화
+    this.isPathRevealed = true; // 경로 표시 상태 초기화
+    this.pathRevealTimer = undefined; // 타이머 초기화
+
     this.gameState = {
       level: data.level || 1,
       score: data.score || 0,
@@ -90,12 +94,7 @@ export class GamePlayScene extends Phaser.Scene {
       this.startGame();
     });
 
-    // Listen for spacebar during path reveal
-    this.input.keyboard!.on('keydown-SPACE', () => {
-      if (this.isPathRevealed && !this.playerState.canMove) {
-        this.skipPathReveal();
-      }
-    });
+    // 스페이스바 이벤트 리스너는 update 메서드에서 처리하므로 제거
   }
 
   private skipPathReveal() {
@@ -454,6 +453,12 @@ export class GamePlayScene extends Phaser.Scene {
   }
 
   update() {
+    // 경로 공개 중 스페이스바 건너뛰기 처리
+    if (this.isPathRevealed && !this.playerState.canMove && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      this.skipPathReveal();
+      return;
+    }
+
     if (!this.playerState.canMove || this.playerState.isMoving) return;
 
     let moveX = 0;
@@ -720,7 +725,8 @@ export class GamePlayScene extends Phaser.Scene {
     this.time.delayedCall(1500, () => {
       this.cameras.main.fadeOut(300, 255, 255, 255);
       this.time.delayedCall(300, () => {
-        this.scene.start('GamePlay', {
+        // 씬을 완전히 종료하고 다시 시작
+        this.scene.restart({
           level: this.gameState.level + 1,
           score: this.gameState.score
         });
