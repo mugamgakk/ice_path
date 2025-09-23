@@ -105,12 +105,14 @@ export class GameOverScene extends Phaser.Scene {
     // Create crystal ice buttons
     const buttonY = height / 2 + 140;
 
-    // Retry button
+    // Retry button - 현재 레벨에서 다시 시작
     const retryButton = this.createIceButton(width / 2 - 120, buttonY, '다시 하기', 0x42A5F5);
     retryButton.on('pointerdown', () => {
       this.cameras.main.fadeOut(500, 255, 255, 255);
       this.time.delayedCall(500, () => {
-        this.scene.start('GamePlay', { level: 1, score: 0 });
+        // 현재 레벨에서 점수는 이전 레벨까지의 점수로 복구하여 재시작
+        const previousLevelScore = Math.max(0, data.score - (100 * data.level));
+        this.scene.start('GamePlay', { level: data.level, score: previousLevelScore });
       });
     });
 

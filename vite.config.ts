@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 
 export default defineConfig({
   base: "/ice_path/",
@@ -8,12 +8,12 @@ export default defineConfig({
       output: {
         manualChunks: {
           // Split Phaser into its own chunk
-          phaser: ['phaser'],
+          phaser: ["phaser"],
           // Keep game logic in main chunk (it's small)
-        }
-      }
+        },
+      },
     },
     // Optimize for production
-    minify: 'esbuild'
-  }
-});
+    minify: "esbuild",
+  },
+}) satisfies UserConfig;
